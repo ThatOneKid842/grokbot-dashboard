@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GROKBOT + JEV · Trading Desk</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+/* ============================================================
+   ALL DASHBOARD DATA LIVES HERE — edit this object to update.
+   Only real figures; nothing invented.
+   ============================================================ */
+const DATA = {
+  snapshot: "8:42 PM UK, 30 Oct 2026",
+  wallet: { usd: 24.78, sol: 0.261, solPrice: 94.94 },
+  balanceHistory: [               // real points only
+    { label: "Start (≈)", usd: 25.00, approx: true },
+    { label: "Now 8:42 PM UK", usd: 24.78 }
+  ],
+  openPositions: 0,
+  leverage: "OFF",
+  maxTradeUsd: 10,
+  feeReserveSol: 0.05,
+  scanEveryMin: 5,
+  lastRun: { time: "8:41 PM UK", result: "no trade" },
+  trades: [
+    { side: "BUY",  token: "BONK", sol: 0.053, usd: 5.00 },
+    { side: "SELL", token: "BONK", sol: 0.052, usd: 4.94 }
+  ],
+  realisedUsd: -0.06,
+  market: {
+    mood: "RISK-OFF",
+    notes: ["Reported Binance hack", "BTC under $77K", "SOL down 3–5% over 24h"]
+  },
+  vetRejected: [
+    { token: "GATO",    reason: "no momentum" },
+    { token: "JOB",     reason: "no momentum" },
+    { token: "DESSA",   reason: "no momentum" },
+    { token: "CLAUDIA", reason: "reversing, sellers ahead" },
+    { token: "CBUCKS",  reason: "too thin" }
+  ],
+  bestCandidate: { token: "POPCAT", status: "waiting for buyers" },
+  thresholds: [
+    ["min_age_minutes", "60"],
+    ["min_liquidity_usd", "100000"],
+    ["min_volume_24h", "250000"],
+    ["min_trades_1h", "150"],
+    ["max_top_holder", "0.10"],
+    ["max_top10", "0.35"],
+    ["mint_authority", "none"],
+    ["freeze_authority", "none"],
+    ["honeypot", "false"],
+    ["momentum", "buys > sells"]
+  ]
+};
+</script>
+<style>
+  :root{
+    --bg:#07060f; --panel:#0d0b1c; --panel2:#120f26; --pink:#ff2d95; --pink2:#ff6ec7;
+    --cyan:#2de2ff; --green:#39ff88; --amber:#ffc23d; --violet:#a875ff; --red:#ff4d6d;
+    --text:#e9e3ff; --dim:#8b84ad; --line:#2a2350;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"JetBrains Mono","Fira Code","SFMono-Regular",Menlo,Consolas,"DejaVu Sans Mono",monospace;font-size:13px}
+  body{background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(255,45,149,.12), transparent 60%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 3px), var(--bg);}
+  .frame{width:1240px;margin:20px auto;border:2px solid var(--pink);border-radius:14px;padding:16px;
+    box-shadow:0 0 24px rgba(255,45,149,.45), inset 0 0 30px rgba(255,45,149,.12)}
+  header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;
+    border:1px solid var(--pink);border-radius:10px;background:linear-gradient(90deg,#1a0820,#0d0b1c 50%,#1a0820);
+    box-shadow:0 0 12px rgba(255,45,149,.35)}
+  .logo{font-size:28px;font-weight:800;letter-spacing:6px;color:var(--pink);
+    text-shadow:0 0 8px var(--pink),0 0 22px rgba(255,45,149,.7)}
+  .logo small{font-size:14px;letter-spacing:3px;color:var(--cyan);text-shadow:0 0 8px var(--cyan);margin-left:10px}
+  .hdr-mid{color:var(--dim);font-size:12px;letter-spacing:2px;text-align:center}
+  .hdr-mid b{color:var(--amber)}
+  .clock{font-size:20px;color:var(--cyan);text-shadow:0 0 8px var(--cyan);text-align:right}
+  .clock span{display:block;font-size:10px;color:var(--dim);letter-spacing:2px;text-shadow:none}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+  .card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);
+    border-top:3px solid var(--acc);border-radius:10px;padding:10px 12px;min-height:128px;position:relative;
+    box-shadow:0 0 14px color-mix(in srgb,var(--acc) 22%,transparent)}
+  .card h3{margin:0 0 6px;font-size:14px;letter-spacing:3px;color:var(--acc);display:flex;align-items:center;gap:8px;
+    text-shadow:0 0 6px var(--acc)}
+  .card h3 em{font-style:normal;font-size:10px;color:var(--dim);letter-spacing:1px;margin-left:auto;text-shadow:none}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  .status{font-size:11px;color:var(--text);line-height:1.5;min-height:50px}
+  .status .k{color:var(--dim)}
+  .bar{height:6px;background:#1c1838;border-radius:4px;overflow:hidden;margin-top:8px;position:relative}
+  .bar i{display:block;height:100%;background:var(--acc);box-shadow:0 0 8px var(--acc)}
+  .bar.scan i{width:30%;position:absolute;animation:scan 2.4s ease-in-out infinite;
+    background:linear-gradient(90deg,transparent,var(--acc),transparent)}
+  @keyframes scan{0%{left:-30%}100%{left:100%}}
+  .barlbl{font-size:9px;color:var(--dim);margin-top:3px;letter-spacing:1px}
+  .panel{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--pink);border-radius:10px;
+    padding:12px;box-shadow:0 0 12px rgba(255,45,149,.25)}
+  .panel h2{margin:0 0 8px;font-size:13px;letter-spacing:3px;color:var(--pink);text-shadow:0 0 6px var(--pink);
+    display:flex;justify-content:space-between}
+  .panel h2 span{color:var(--dim);font-size:10px;letter-spacing:1px;text-shadow:none;font-weight:normal}
+  .mid{display:grid;grid-template-columns:1fr 340px;gap:12px;margin-top:12px}
+  .floor svg{width:100%;height:auto;display:block}
+  .bal-big{font-size:46px;font-weight:800;color:var(--text);text-shadow:0 0 12px rgba(255,110,199,.6);margin:4px 0 0}
+  .bal-sub{color:var(--dim);font-size:12px}
+  .kv{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:12px;margin-top:10px;border-top:1px dashed var(--line);padding-top:10px}
+  .kv .v{text-align:right}
+  .neg{color:var(--red)} .pos{color:var(--green)} .amb{color:var(--amber)} .cy{color:var(--cyan)}
+  .bottom{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+  pre.code{margin:0;font-size:12.5px;line-height:1.6;background:#08071a;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:hidden}
+  .c-k{color:var(--cyan)} .c-v{color:var(--amber)} .c-s{color:var(--green)} .c-c{color:#5e5885} .c-p{color:var(--pink2)}
+  .tape{margin-top:12px;border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--dim);
+    display:flex;gap:18px;flex-wrap:wrap;background:#0a0918}
+  .tape b{color:var(--red)}
+  footer{margin-top:14px;text-align:center;font-size:11px;color:var(--dim);letter-spacing:1px;border-top:1px solid var(--line);padding-top:10px}
+  footer b{color:var(--pink2);font-weight:normal}
+  .note{font-size:10px;color:#5e5885;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="frame">
+  <header>
+    <div class="logo">GROKBOT<small>+ JEV</small></div>
+    <div class="hdr-mid" id="hdrMid"></div>
+    <div class="clock"><div id="clock">--:--:--</div><span>UTC · BROWSER CLOCK</span></div>
+  </header>
+
+  <div class="grid4" id="row1"></div>
+  <div class="grid4" id="row2"></div>
+
+  <div class="tape" id="tape"></div>
+
+  <div class="mid">
+    <div class="panel floor">
+      <h2>TRADING FLOOR <span>agents at desks · illustrative scene</span></h2>
+      <svg id="floor" viewBox="0 0 860 560"></svg>
+    </div>
+    <div class="panel" id="balance"></div>
+  </div>
+
+  <div class="bottom">
+    <div class="panel" id="candlePanel"></div>
+    <div class="panel">
+      <h2>THRESHOLDS <span>scanner filters · config</span></h2>
+      <pre class="code" id="thresholds"></pre>
+    </div>
+  </div>
+
+  <footer id="footer"></footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const usd = (n, d=2) => (n<0?"-":"") + "$" + Math.abs(n).toFixed(d);
+const D = DATA;
+
+/* ---------- header + clock ---------- */
+$("hdrMid").innerHTML = `TRADING DESK · SOLANA · LEVERAGE <b>${D.leverage}</b> · MARKET <b>${D.market.mood}</b>`;
+function tick(){ const t=new Date(); $("clock").textContent = t.toISOString().slice(11,19); }
+tick(); setInterval(tick,1000);
+
+/* ---------- agent cards ---------- */
+const rejected = D.vetRejected.map(r=>r.token).join(", ");
+const agents1 = [
+  { name:"CHIEF", acc:"var(--pink)", tag:"ORCHESTRATOR",
+    status:`<span class="k">wallet</span> ${usd(D.wallet.usd)} · <span class="k">open</span> ${D.openPositions}<br><span class="k">leverage</span> ${D.leverage} · <span class="k">trades</span> ${D.trades.length}<br><span class="k">realised</span> <span class="neg">${usd(D.realisedUsd)}</span>`,
+    bar:{scan:true,label:"supervising"} },
+  { name:"SCAN", acc:"var(--cyan)", tag:`EVERY ${D.scanEveryMin} MIN`,
+    status:`<span class="k">last run</span> ${D.lastRun.time}<br><span class="k">result</span> ${D.lastRun.result}<br><span class="k">best</span> <span class="amb">${D.bestCandidate.token}</span>`,
+    bar:{scan:true,label:"scanning…"} },
+  { name:"VET", acc:"var(--violet)", tag:`${D.vetRejected.length} REJECTED`,
+    status:D.vetRejected.map(r=>`<span class="neg">✕</span> ${r.token} <span class="k">${r.reason}</span>`).join("<br>"),
+    bar:{scan:true,label:"vetting"} },
+  { name:"SOCIAL", acc:"var(--amber)", tag:D.market.mood,
+    status:D.market.notes.map(n=>`<span class="amb">▸</span> ${n}`).join("<br>"),
+    bar:{scan:true,label:"listening"} }
+];
+const agents2 = [
+  { name:"SIZE", acc:"var(--green)", tag:"LIMITS",
+    status:`<span class="k">max trade</span> ≈${usd(D.maxTradeUsd,0)}<br><span class="k">fee reserve</span> ${D.feeReserveSol} SOL<br><span class="k">deployed</span> ${usd(0)} (0 open)`,
+    bar:{pct:0,label:"0% of balance deployed"} },
+  { name:"FILLS", acc:"var(--pink2)", tag:`${D.trades.length} FILLS`,
+    status:D.trades.map(t=>`<span class="${t.side==="BUY"?"pos":"neg"}">${t.side}</span> ${t.token} ${t.sol} SOL ≈${usd(t.usd)}`).join("<br>")+`<br><span class="k">realised</span> <span class="neg">${usd(D.realisedUsd)}</span>`,
+    bar:{pct:100,label:"round-trip closed"} },
+  { name:"RISK", acc:"var(--red)", tag:`LEV ${D.leverage}`,
+    status:`<span class="k">open positions</span> ${D.openPositions}<br><span class="k">market</span> <span class="amb">${D.market.mood}</span><br><span class="k">keep</span> ${D.feeReserveSol} SOL for fees`,
+    bar:{pct:0,label:"exposure 0%"} },
+  { name:"CRAWLER", acc:"var(--cyan)", tag:"WATCHLIST",
+    status:`<span class="k">best candidate</span><br><span class="amb">${D.bestCandidate.token}</span> — ${D.bestCandidate.status}<br><span class="k">rejected</span> ${D.vetRejected.length} tokens`,
+    bar:{scan:true,label:"crawling"} }
+];
+function renderCards(el, list){
+  $(el).innerHTML = list.map(a=>`
+    <div class="card" style="--acc:${a.acc}">
+      <h3><span class="dot"></span>${a.name}<em>${a.tag}</em></h3>
+      <div class="status">${a.status}</div>
+      <div class="bar ${a.bar.scan?"scan":""}"><i style="${a.bar.scan?"":"width:"+a.bar.pct+"%"}"></i></div>
+      <div class="barlbl">${a.bar.label}</div>
+    </div>`).join("");
+}
+renderCards("row1", agents1); renderCards("row2", agents2);
+
+$("tape").innerHTML = `<span>MARKET: <b>${D.market.mood}</b></span>` +
+  D.market.notes.map(n=>`<span>▸ ${n}</span>`).join("") +
+  `<span>▸ SOL ${usd(D.wallet.solPrice)}</span><span>▸ last scan ${D.lastRun.time}: ${D.lastRun.result}</span>`;
+
+/* ---------- balance panel ---------- */
+(function(){
+  const pts = D.balanceHistory, W=316, H=150, pad=26;
+  const lo = 24.0, hi = 26.0;                       // fixed honest scale around ~$25
+  const x = i => pad + i*(W-pad-10)/(pts.length-1);
+  const y = v => 10 + (hi-v)/(hi-lo)*(H-30);
+  const line = pts.map((p,i)=>`${i?"L":"M"}${x(i)},${y(p.usd)}`).join(" ");
+  const area = line + ` L${x(pts.length-1)},${H-20} L${x(0)},${H-20} Z`;
+  const grid = [24,24.5,25,25.5,26].map(v=>`<line x1="${pad}" x2="${W-6}" y1="${y(v)}" y2="${y(v)}" stroke="#2a2350" stroke-dasharray="2 3"/><text x="0" y="${y(v)+3}" fill="#8b84ad" font-size="9">${v.toFixed(1)}</text>`).join("");
+  const dots = pts.map((p,i)=>`<circle cx="${x(i)}" cy="${y(p.usd)}" r="4" fill="#39ff88" style="filter:drop-shadow(0 0 4px #39ff88)"/>
+     <text x="${x(i)}" y="${y(p.usd)-9}" fill="#e9e3ff" font-size="10" text-anchor="${i?"end":"start"}">${p.approx?"≈":""}${usd(p.usd)}</text>
+     <text x="${x(i)}" y="${H-6}" fill="#8b84ad" font-size="9" text-anchor="${i?"end":"start"}">${p.label}</text>`).join("");
+  const chg = pts[pts.length-1].usd - pts[0].usd;
+  $("balance").innerHTML = `
+    <h2>BALANCE <span>wallet value</span></h2>
+    <div class="bal-big">${usd(D.wallet.usd)}</div>
+    <div class="bal-sub">${D.wallet.sol} SOL @ ${usd(D.wallet.solPrice)} · <span class="neg">slightly down vs ≈${usd(pts[0].usd)} start</span></div>
+    <svg viewBox="0 0 ${W} ${H}" width="100%" style="margin-top:10px">
+      <defs><linearGradient id="ga" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#39ff88" stop-opacity=".35"/><stop offset="1" stop-color="#39ff88" stop-opacity="0"/></linearGradient></defs>
+      ${grid}<path d="${area}" fill="url(#ga)"/><path d="${line}" stroke="#39ff88" stroke-width="2" fill="none" style="filter:drop-shadow(0 0 4px #39ff88)"/>${dots}
+    </svg>
+    <div class="note">Only ${pts.length} real data points plotted — start value approximate.</div>
+    <div class="kv">
+      <span>Open positions</span><span class="v">${D.openPositions}</span>
+      <span>Trades so far</span><span class="v">${D.trades.length}</span>
+      <span>Realised P&amp;L</span><span class="v neg">${usd(D.realisedUsd)}</span>
+      <span>Leverage</span><span class="v amb">${D.leverage}</span>
+      <span>Max trade</span><span class="v">≈${usd(D.maxTradeUsd,0)}</span>
+      <span>Fee reserve</span><span class="v">${D.feeReserveSol} SOL</span>
+      <span>Scan interval</span><span class="v cy">${D.scanEveryMin} min</span>
+      <span>Last run</span><span class="v">${D.lastRun.time}</span>
+    </div>`;
+})();
+
+/* ---------- bottom-left: BONK round trip candle (real values only) ---------- */
+(function(){
+  const [b,s] = D.trades, W=560, H=300, pad=44;
+  const lo=4.90, hi=5.04;
+  const y = v => 16 + (hi-v)/(hi-lo)*(H-50);
+  const grid=[4.90,4.94,4.98,5.02].map(v=>`<line x1="${pad}" x2="${W-10}" y1="${y(v)}" y2="${y(v)}" stroke="#2a2350" stroke-dasharray="2 3"/><text x="4" y="${y(v)+3}" fill="#8b84ad" font-size="10">${usd(v)}</text>`).join("");
+  const cx = 300, bw=46;
+  const top=y(b.usd), bot=y(s.usd);
+  $("candlePanel").innerHTML = `
+    <h2>CHART · ${b.token} ROUND TRIP <span>position value in USD · real fills only</span></h2>
+    <svg viewBox="0 0 ${W} ${H}" width="100%">
+      ${grid}
+      <rect x="${cx-bw/2}" y="${top}" width="${bw}" height="${bot-top}" fill="#ff4d6d" style="filter:drop-shadow(0 0 6px #ff4d6d)"/>
+      <line x1="${pad}" x2="${cx-bw/2-6}" y1="${top}" y2="${top}" stroke="#39ff88" stroke-dasharray="4 3"/>
+      <line x1="${cx+bw/2+6}" x2="${W-10}" y1="${bot}" y2="${bot}" stroke="#ff4d6d" stroke-dasharray="4 3"/>
+      <circle cx="${cx-bw/2-6}" cy="${top}" r="5" fill="#39ff88"/>
+      <circle cx="${cx+bw/2+6}" cy="${bot}" r="5" fill="#ff4d6d"/>
+      <text x="${pad+6}" y="${top-8}" fill="#39ff88" font-size="11">BUY ${b.sol} SOL ≈${usd(b.usd)}</text>
+      <text x="${W-14}" y="${bot+16}" fill="#ff4d6d" font-size="11" text-anchor="end">SELL ${s.sol} SOL ≈${usd(s.usd)}</text>
+      <text x="${cx}" y="${(top+bot)/2+4}" fill="#07060f" font-size="10" font-weight="700" text-anchor="middle">${usd(D.realisedUsd)}</text>
+      <text x="${pad}" y="${H-8}" fill="#8b84ad" font-size="10">open = buy value · close = sell value · no intra-trade price feed</text>
+    </svg>`;
+})();
+
+/* ---------- thresholds ---------- */
+$("thresholds").innerHTML =
+  `<span class="c-c"># vet.filters — token must pass ALL</span>\n<span class="c-p">thresholds</span> = {\n` +
+  D.thresholds.map(([k,v])=>{
+    const isNum = /^[\d.]+$/.test(v);
+    return `  <span class="c-k">${k.padEnd(18)}</span>: ${isNum?`<span class="c-v">${v}</span>`:`<span class="c-s">"${v}"</span>`},`;
+  }).join("\n") + `\n}\n<span class="c-c"># best candidate: ${D.bestCandidate.token} → ${D.bestCandidate.status}</span>`;
+
+/* ---------- footer ---------- */
+$("footer").innerHTML = `Snapshot as of <b>${D.snapshot}</b> — not live; updated by Grok Bot`;
+
+/* ---------- isometric trading floor (decorative) ---------- */
+(function(){
+  const svg = $("floor"), OX=430, OY=165, S=29;
+  const P = (x,y,z=0) => [OX + (x-y)*S, OY + (x+y)*S*0.5 - z*S];
+  const pts = a => a.map(p=>P(...p).join(",")).join(" ");
+  let out = `<defs>
+    <radialGradient id="glow"><stop offset="0" stop-color="#fff"/><stop offset=".4" stop-color="currentColor"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></radialGradient>
+  </defs>`;
+  const N=13;
+  // floor
+  out += `<polygon points="${pts([[0,0],[N,0],[N,N],[0,N]])}" fill="#0f0c22" stroke="#ff2d95" stroke-width="1.5" style="filter:drop-shadow(0 0 6px #ff2d95)"/>`;
+  for(let i=1;i<N;i++){ out+=`<polyline points="${pts([[i,0],[i,N]])}" stroke="#1d1840" fill="none"/><polyline points="${pts([[0,i],[N,i]])}" stroke="#1d1840" fill="none"/>`; }
+  // back walls
+  const WH=5;
+  out += `<polygon points="${pts([[0,0,0],[N,0,0],[N,0,WH],[0,0,WH]])}" fill="#120e2a" stroke="#3a2f6e"/>`;
+  out += `<polygon points="${pts([[0,0,0],[0,N,0],[0,N,WH],[0,0,WH]])}" fill="#0c0920" stroke="#3a2f6e"/>`;
+  // wall screen on right-back wall (y=0 plane) with candlesticks — decorative, no values
+  const sx0=3, sx1=10, sz0=1.6, sz1=4.4;
+  out += `<polygon points="${pts([[sx0,0.02,sz0],[sx1,0.02,sz0],[sx1,0.02,sz1],[sx0,0.02,sz1]])}" fill="#05040d" stroke="#ff2d95" stroke-width="2" style="filter:drop-shadow(0 0 8px #ff2d95)"/>`;
+  const candles=[[.55,.7,.5,.8],[.7,.6,.55,.78],[.6,.68,.52,.74],[.68,.5,.45,.72],[.5,.58,.42,.64],[.58,.45,.4,.62],[.45,.52,.36,.58],[.52,.4,.34,.56],[.4,.47,.3,.52],[.47,.38,.3,.5],[.38,.44,.28,.5],[.44,.36,.3,.48]];
+  candles.forEach((c,i)=>{
+    const x = sx0+0.45+i*(sx1-sx0-0.9)/(candles.length-1);
+    const zf = v => sz0+0.2+v*(sz1-sz0-0.5);
+    const up = c[1]>c[0], col = up?"#39ff88":"#ff4d6d";
+    const [wx1,wy1]=P(x,0.02,zf(c[3])), [wx2,wy2]=P(x,0.02,zf(c[2]));
+    out+=`<line x1="${wx1}" y1="${wy1}" x2="${wx2}" y2="${wy2}" stroke="${col}" stroke-width="1"/>`;
+    const a=Math.max(c[0],c[1]), b=Math.min(c[0],c[1]);
+    out+=`<polygon points="${pts([[x-.17,0.02,zf(a)],[x+.17,0.02,zf(a)],[x+.17,0.02,zf(b)],[x-.17,0.02,zf(b)]])}" fill="${col}"/>`;
+  });
+  { const [tx,ty]=P(sx0+0.3,0,sz1-0.25); out+=`<text x="${tx}" y="${ty}" fill="#ff6ec7" font-size="9" transform="skewY(26.57) " style="display:none"></text>`; }
+  // left wall: rocket TOP RUNNER + radar WHALE RADAR (as wall panels)
+  function wallPanel(y0,y1,z0,z1,col){ out+=`<polygon points="${pts([[0.02,y0,z0],[0.02,y1,z0],[0.02,y1,z1],[0.02,y0,z1]])}" fill="#08061a" stroke="${col}" stroke-width="1.5" style="filter:drop-shadow(0 0 5px ${col})"/>`; }
+  wallPanel(2,5.5,1.8,4.4,"#ffc23d");
+  wallPanel(7,10.5,1.8,4.4,"#2de2ff");
+  // rocket
+  { const [cx,cy]=P(0.02,3.75,3.2);
+    out+=`<g transform="translate(${cx},${cy})" style="filter:drop-shadow(0 0 5px #ffc23d)">
+      <path d="M0,-26 C10,-16 10,0 6,10 L-6,10 C-10,0 -10,-16 0,-26Z" fill="#ffc23d"/>
+      <circle cx="0" cy="-8" r="4" fill="#07060f" stroke="#ff2d95" stroke-width="1.5"/>
+      <path d="M-6,4 L-13,14 L-6,11Z M6,4 L13,14 L6,11Z" fill="#ff2d95"/>
+      <path d="M-4,11 L0,22 L4,11Z" fill="#ff6ec7"><animate attributeName="opacity" values="1;.3;1" dur="0.6s" repeatCount="indefinite"/></path>
+    </g>`;
+    const [lx,ly]=P(0.02,3.75,1.95); out+=`<text x="${lx}" y="${ly}" fill="#ffc23d" font-size="10" text-anchor="middle" letter-spacing="1">TOP RUNNER</text>`; }
+  // radar
+  { const [cx,cy]=P(0.02,8.75,3.15);
+    out+=`<g transform="translate(${cx},${cy})" style="filter:drop-shadow(0 0 5px #2de2ff)">
+      <circle r="20" fill="none" stroke="#2de2ff" stroke-opacity=".5"/><circle r="12" fill="none" stroke="#2de2ff" stroke-opacity=".5"/><circle r="4" fill="none" stroke="#2de2ff" stroke-opacity=".5"/>
+      <line x1="-20" x2="20" stroke="#2de2ff" stroke-opacity=".3"/><line y1="-20" y2="20" stroke="#2de2ff" stroke-opacity=".3"/>
+      <g><path d="M0,0 L20,0 A20,20 0 0,0 14,-14Z" fill="#2de2ff" fill-opacity=".45"/>
+        <animateTransform attributeName="transform" type="rotate" from="0" to="-360" dur="3s" repeatCount="indefinite"/></g>
+    </g>`;
+    const [lx,ly]=P(0.02,8.75,1.95); out+=`<text x="${lx}" y="${ly}" fill="#2de2ff" font-size="10" text-anchor="middle" letter-spacing="1">WHALE RADAR</text>`; }
+  // iso box helper
+  function box(x,y,w,d,h,z,top,left,right,stroke){
+    out+=`<polygon points="${pts([[x,y+d,z],[x+w,y+d,z],[x+w,y+d,z+h],[x,y+d,z+h]])}" fill="${left}" stroke="${stroke||'none'}"/>`;
+    out+=`<polygon points="${pts([[x+w,y,z],[x+w,y+d,z],[x+w,y+d,z+h],[x+w,y,z+h]])}" fill="${right}" stroke="${stroke||'none'}"/>`;
+    out+=`<polygon points="${pts([[x,y,z+h],[x+w,y,z+h],[x+w,y+d,z+h],[x,y+d,z+h]])}" fill="${top}" stroke="${stroke||'none'}"/>`;
+  }
+  // desks: 8 agents
+  const deskAgents=[["CHIEF","#ff2d95"],["SCAN","#2de2ff"],["VET","#a875ff"],["SOCIAL","#ffc23d"],["SIZE","#39ff88"],["FILLS","#ff6ec7"],["RISK","#ff4d6d"],["CRAWLER","#2de2ff"]];
+  const pos=[[3,3.2],[6.5,3.2],[10,3.2],[3,6.6],[6.5,6.6],[10,6.6],[3,10],[6.5,10]];
+  // draw back-to-front ordering already (by x+y roughly)
+  const order = pos.map((p,i)=>i).sort((a,b)=>(pos[a][0]+pos[a][1])-(pos[b][0]+pos[b][1]));
+  order.forEach(i=>{
+    const [x,y]=pos[i], [name,col]=deskAgents[i];
+    box(x,y,2.2,1.1,0.55,0,"#2a2350","#1a1538","#141030","#3a2f6e");
+    // monitor (vertical panel facing viewer on the desk's back edge)
+    const mx0=x+0.4, mx1=x+1.8, mz0=0.62, mz1=1.45, my=y+0.25;
+    out+=`<polygon points="${pts([[mx0,my,mz0],[mx1,my,mz0],[mx1,my,mz1],[mx0,my,mz1]])}" fill="#05040d" stroke="${col}" stroke-width="1"/>`;
+    const hs=[.3,.5,.4,.7,.55,.85];
+    hs.forEach((h,k)=>{
+      const bx=mx0+0.15+k*0.21;
+      out+=`<polygon points="${pts([[bx,my,mz0+.06],[bx+.13,my,mz0+.06],[bx+.13,my,mz0+.06+h*(mz1-mz0-.14)],[bx,my,mz0+.06+h*(mz1-mz0-.14)]])}" fill="#39ff88" opacity=".85"/>`;
+    });
+    // agent dot (in front of desk)
+    const [ax,ay]=P(x+1.1,y+1.75,0.55);
+    out+=`<circle cx="${ax}" cy="${ay}" r="14" fill="${col}" opacity=".18"><animate attributeName="opacity" values=".1;.35;.1" dur="${1.6+i*0.2}s" repeatCount="indefinite"/></circle>`;
+    out+=`<circle cx="${ax}" cy="${ay}" r="6" fill="${col}" style="filter:drop-shadow(0 0 6px ${col})"/>`;
+    const [lx,ly]=P(x+1.1,y+1.75,0);
+    out+=`<text x="${lx}" y="${ly+14}" fill="${col}" font-size="9" text-anchor="middle" letter-spacing="1">${name}</text>`;
+  });
+  // plants
+  function plant(x,y){
+    box(x,y,0.6,0.6,0.5,0,"#3a2f6e","#241d4a","#1b1538");
+    const [px,py]=P(x+0.3,y+0.3,0.5);
+    out+=`<g fill="#1fae63" style="filter:drop-shadow(0 0 3px #39ff88)"><circle cx="${px}" cy="${py-10}" r="9"/><circle cx="${px-8}" cy="${py-4}" r="7"/><circle cx="${px+8}" cy="${py-4}" r="7"/><circle cx="${px}" cy="${py-20}" r="6" fill="#39ff88"/></g>`;
+  }
+  plant(11.6,10.8); plant(0.6,11.6); plant(11.8,0.6);
+  svg.innerHTML = out;
+})();
+</script>
+</body>
+</html>
