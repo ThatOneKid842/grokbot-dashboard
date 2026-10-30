@@ -10,11 +10,11 @@
    Only real figures; nothing invented.
    ============================================================ */
 const DATA = {
-  "snapshot": "8:57 PM UK, 30 Oct 2026",
+  "snapshot": "9:10 PM UK, 30 Oct 2026",
   "wallet": {
-    "usd": 24.82,
+    "usd": 24.86,
     "sol": 0.261,
-    "solPrice": 95.1
+    "solPrice": 95.25
   },
   "balanceHistory": [
     {
@@ -23,8 +23,12 @@ const DATA = {
       "approx": true
     },
     {
-      "label": "Now 8:57 PM UK",
+      "label": "8:57 PM UK",
       "usd": 24.82
+    },
+    {
+      "label": "Now 9:10 PM UK",
+      "usd": 24.86
     }
   ],
   "openPositions": 0,
@@ -33,7 +37,7 @@ const DATA = {
   "feeReserveSol": 0.05,
   "scanEveryMin": 5,
   "lastRun": {
-    "time": "8:57 PM UK",
+    "time": "9:05 PM UK",
     "result": "no trade"
   },
   "trades": [
@@ -62,11 +66,19 @@ const DATA = {
   "vetRejected": [
     {
       "token": "GLITCH",
-      "reason": "more sells than buys"
+      "reason": "spike, more sells than buys"
     },
     {
       "token": "JOB",
       "reason": "flat, buys and sells even"
+    },
+    {
+      "token": "HYPERCHAN",
+      "reason": "falling, liquidity too low"
+    },
+    {
+      "token": "GATO",
+      "reason": "more sells than buys"
     }
   ],
   "bestCandidate": {
