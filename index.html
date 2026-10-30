@@ -10,11 +10,11 @@
    Only real figures; nothing invented.
    ============================================================ */
 const DATA = {
-  "snapshot": "9:47 PM UK, 30 Oct 2026",
+  "snapshot": "10:04 PM UK, 30 Oct 2026",
   "wallet": {
-    "usd": 24.91,
-    "sol": 0.261,
-    "solPrice": 95.43
+    "usd": 24.88,
+    "sol": 0.2608,
+    "solPrice": 95.42
   },
   "balanceHistory": [
     {
@@ -47,8 +47,16 @@ const DATA = {
       "usd": 24.89
     },
     {
-      "label": "Now 9:47 PM UK",
+      "label": "9:47 PM UK",
       "usd": 24.91
+    },
+    {
+      "label": "9:55 PM UK",
+      "usd": 24.87
+    },
+    {
+      "label": "Now 10:04 PM UK",
+      "usd": 24.88
     }
   ],
   "openPositions": 0,
@@ -57,8 +65,8 @@ const DATA = {
   "feeReserveSol": 0.05,
   "scanEveryMin": 5,
   "lastRun": {
-    "time": "9:47 PM UK",
-    "result": "no trade - Phantom timed out twice (even wallet reads); CLAUDIA still best pick"
+    "time": "10:04 PM UK",
+    "result": "no trade - DESSA passed every check but Phantom swap quotes still return HTTP 403"
   },
   "trades": [
     {
@@ -78,40 +86,45 @@ const DATA = {
   "market": {
     "mood": "RISK-OFF",
     "notes": [
-      "SOL about $95.43, down about 1.7% over 24h",
-      "CLAUDIA still leads: buys 118 vs sells 84 in 1h, up 1.4%",
-      "Phantom failed four runs in a row, now timing out on wallet reads too"
+      "SOL about $95.42, down about 1.9% over 24h",
+      "Phantom wallet reads work, but swap quotes still fail with HTTP 403 (support ticket 464340 open)",
+      "DESSA passed safety and momentum checks: 128 buys vs 117 sells in 1h, +2.3% over 5m",
+      "Most other active coins have sellers ahead or bot-like volume"
     ]
   },
   "vetRejected": [
     {
       "token": "HYPERCHAN",
-      "reason": "down 5.6% in 1h, bot-like volume"
+      "reason": "bot-like volume (15.5K trades/h on $81K liq)"
     },
     {
-      "token": "HI",
-      "reason": "more sells than buys in 1h"
-    },
-    {
-      "token": "NIO",
-      "reason": "down 4.2% in 1h"
-    },
-    {
-      "token": "GTA6",
-      "reason": "down 6.4% in 1h"
+      "token": "JOB",
+      "reason": "sells slightly ahead in 1h (512 vs 508)"
     },
     {
       "token": "GATO",
-      "reason": "far more sells than buys"
+      "reason": "sellers well ahead (1,224 vs 702 in 1h)"
     },
     {
-      "token": "HYPE",
-      "reason": "twice as many sells as buys"
+      "token": "GLITCH",
+      "reason": "+25% spike with sellers ahead"
+    },
+    {
+      "token": "calm",
+      "reason": "broken price data, sellers ahead in 1h"
+    },
+    {
+      "token": "three",
+      "reason": "flat price on bot-like trade count"
+    },
+    {
+      "token": "Jason",
+      "reason": "dumping, 2,834 sells vs 181 buys"
     }
   ],
   "bestCandidate": {
-    "token": "CLAUDIA",
-    "status": "best pick (buys 118 vs sells 84 in 1h, up 1.4%), not bought: Phantom timing out"
+    "token": "DESSA",
+    "status": "passed every check at 10:04 PM UK (RugCheck score 1, no mint/freeze authority, LP 100% locked, top holder 0.36%); buy blocked because Phantom swap quotes return HTTP 403"
   },
   "thresholds": [
     [
