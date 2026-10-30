@@ -10,46 +10,110 @@
    Only real figures; nothing invented.
    ============================================================ */
 const DATA = {
-  snapshot: "8:42 PM UK, 30 Oct 2026",
-  wallet: { usd: 24.78, sol: 0.261, solPrice: 94.94 },
-  balanceHistory: [               // real points only
-    { label: "Start (≈)", usd: 25.00, approx: true },
-    { label: "Now 8:42 PM UK", usd: 24.78 }
-  ],
-  openPositions: 0,
-  leverage: "OFF",
-  maxTradeUsd: 10,
-  feeReserveSol: 0.05,
-  scanEveryMin: 5,
-  lastRun: { time: "8:41 PM UK", result: "no trade" },
-  trades: [
-    { side: "BUY",  token: "BONK", sol: 0.053, usd: 5.00 },
-    { side: "SELL", token: "BONK", sol: 0.052, usd: 4.94 }
-  ],
-  realisedUsd: -0.06,
-  market: {
-    mood: "RISK-OFF",
-    notes: ["Reported Binance hack", "BTC under $77K", "SOL down 3–5% over 24h"]
+  "snapshot": "8:57 PM UK, 30 Oct 2026",
+  "wallet": {
+    "usd": 24.82,
+    "sol": 0.261,
+    "solPrice": 95.1
   },
-  vetRejected: [
-    { token: "GATO",    reason: "no momentum" },
-    { token: "JOB",     reason: "no momentum" },
-    { token: "DESSA",   reason: "no momentum" },
-    { token: "CLAUDIA", reason: "reversing, sellers ahead" },
-    { token: "CBUCKS",  reason: "too thin" }
+  "balanceHistory": [
+    {
+      "label": "Start (\u2248)",
+      "usd": 25.0,
+      "approx": true
+    },
+    {
+      "label": "Now 8:57 PM UK",
+      "usd": 24.82
+    }
   ],
-  bestCandidate: { token: "POPCAT", status: "waiting for buyers" },
-  thresholds: [
-    ["min_age_minutes", "60"],
-    ["min_liquidity_usd", "100000"],
-    ["min_volume_24h", "250000"],
-    ["min_trades_1h", "150"],
-    ["max_top_holder", "0.10"],
-    ["max_top10", "0.35"],
-    ["mint_authority", "none"],
-    ["freeze_authority", "none"],
-    ["honeypot", "false"],
-    ["momentum", "buys > sells"]
+  "openPositions": 0,
+  "leverage": "OFF",
+  "maxTradeUsd": 10,
+  "feeReserveSol": 0.05,
+  "scanEveryMin": 5,
+  "lastRun": {
+    "time": "8:57 PM UK",
+    "result": "no trade"
+  },
+  "trades": [
+    {
+      "side": "BUY",
+      "token": "BONK",
+      "sol": 0.053,
+      "usd": 5
+    },
+    {
+      "side": "SELL",
+      "token": "BONK",
+      "sol": 0.052,
+      "usd": 4.94
+    }
+  ],
+  "realisedUsd": -0.06,
+  "market": {
+    "mood": "RISK-OFF",
+    "notes": [
+      "Reported Binance hack",
+      "BTC under $77K",
+      "SOL down about 2% over 24h"
+    ]
+  },
+  "vetRejected": [
+    {
+      "token": "GLITCH",
+      "reason": "more sells than buys"
+    },
+    {
+      "token": "JOB",
+      "reason": "flat, buys and sells even"
+    }
+  ],
+  "bestCandidate": {
+    "token": "JOB",
+    "status": "waiting for buyers"
+  },
+  "thresholds": [
+    [
+      "min_age_minutes",
+      "60"
+    ],
+    [
+      "min_liquidity_usd",
+      "100000"
+    ],
+    [
+      "min_volume_24h",
+      "250000"
+    ],
+    [
+      "min_trades_1h",
+      "150"
+    ],
+    [
+      "max_top_holder",
+      "0.10"
+    ],
+    [
+      "max_top10",
+      "0.35"
+    ],
+    [
+      "mint_authority",
+      "none"
+    ],
+    [
+      "freeze_authority",
+      "none"
+    ],
+    [
+      "honeypot",
+      "false"
+    ],
+    [
+      "momentum",
+      "buys > sells"
+    ]
   ]
 };
 </script>
@@ -271,7 +335,7 @@ $("thresholds").innerHTML =
   }).join("\n") + `\n}\n<span class="c-c"># best candidate: ${D.bestCandidate.token} → ${D.bestCandidate.status}</span>`;
 
 /* ---------- footer ---------- */
-$("footer").innerHTML = `Snapshot as of <b>${D.snapshot}</b> — not live; updated by Grok Bot`;
+$("footer").innerHTML = `Last updated <b>${D.snapshot}</b> — refreshed by Grok Bot every 5 minutes; reload the page to see the latest`;
 
 /* ---------- isometric trading floor (decorative) ---------- */
 (function(){
