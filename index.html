@@ -10,11 +10,11 @@
    Only real figures; nothing invented.
    ============================================================ */
 const DATA = {
-  "snapshot": "9:15 PM UK, 30 Oct 2026",
+  "snapshot": "9:35 PM UK, 30 Oct 2026",
   "wallet": {
-    "usd": 24.81,
+    "usd": 24.88,
     "sol": 0.261,
-    "solPrice": 95.06
+    "solPrice": 95.34
   },
   "balanceHistory": [
     {
@@ -31,8 +31,16 @@ const DATA = {
       "usd": 24.86
     },
     {
-      "label": "Now 9:15 PM UK",
+      "label": "9:15 PM UK",
       "usd": 24.81
+    },
+    {
+      "label": "9:20 PM UK",
+      "usd": 24.85
+    },
+    {
+      "label": "Now 9:35 PM UK",
+      "usd": 24.88
     }
   ],
   "openPositions": 0,
@@ -41,8 +49,8 @@ const DATA = {
   "feeReserveSol": 0.05,
   "scanEveryMin": 5,
   "lastRun": {
-    "time": "9:15 PM UK",
-    "result": "no trade"
+    "time": "9:35 PM UK",
+    "result": "no trade - CLAUDIA passed checks but Phantom swap quote timed out twice"
   },
   "trades": [
     {
@@ -62,40 +70,40 @@ const DATA = {
   "market": {
     "mood": "RISK-OFF",
     "notes": [
-      "SOL about $95, down about 1.7% over 24h",
-      "Trending Solana memecoins mostly bot-driven micro trades",
-      "Loosened filters active, scam checks unchanged"
+      "SOL about $95.34, down about 2.1% over 24h",
+      "CLAUDIA and STONK passed scam checks with buyers ahead",
+      "Phantom swap quotes timing out, wallet reads still work"
     ]
   },
   "vetRejected": [
     {
+      "token": "HI",
+      "reason": "up 15% in 1h, buys only equal sells, chasing a pump"
+    },
+    {
       "token": "HYPERCHAN",
-      "reason": "bot-like micro trades, down 34% in 6h, paid boosts"
+      "reason": "down 7.4% in 1h, falling"
     },
     {
-      "token": "three",
-      "reason": "tiny bot buys, flat price, 124 insider wallets flagged"
-    },
-    {
-      "token": "JOB",
-      "reason": "slightly more sells than buys"
-    },
-    {
-      "token": "GLITCH",
-      "reason": "more sells than buys"
+      "token": "NIO",
+      "reason": "down 12% in 1h"
     },
     {
       "token": "GATO",
-      "reason": "more sells than buys, down 5.5% in 1h"
+      "reason": "far more sells than buys"
     },
     {
-      "token": "DESSA",
-      "reason": "more sells than buys, flat"
+      "token": "FLUKE",
+      "reason": "liquidity only about $25K"
+    },
+    {
+      "token": "STONK",
+      "reason": "clean but large cap, slow mover, many linked wallets"
     }
   ],
   "bestCandidate": {
-    "token": "JOB",
-    "status": "waiting for buyers to outnumber sellers"
+    "token": "CLAUDIA",
+    "status": "passed all checks, buy blocked by Phantom swap timeout"
   },
   "thresholds": [
     [
