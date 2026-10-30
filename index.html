@@ -10,11 +10,11 @@
    Only real figures; nothing invented.
    ============================================================ */
 const DATA = {
-  "snapshot": "9:10 PM UK, 30 Oct 2026",
+  "snapshot": "9:15 PM UK, 30 Oct 2026",
   "wallet": {
-    "usd": 24.86,
+    "usd": 24.81,
     "sol": 0.261,
-    "solPrice": 95.25
+    "solPrice": 95.06
   },
   "balanceHistory": [
     {
@@ -27,8 +27,12 @@ const DATA = {
       "usd": 24.82
     },
     {
-      "label": "Now 9:10 PM UK",
+      "label": "9:10 PM UK",
       "usd": 24.86
+    },
+    {
+      "label": "Now 9:15 PM UK",
+      "usd": 24.81
     }
   ],
   "openPositions": 0,
@@ -37,7 +41,7 @@ const DATA = {
   "feeReserveSol": 0.05,
   "scanEveryMin": 5,
   "lastRun": {
-    "time": "9:05 PM UK",
+    "time": "9:15 PM UK",
     "result": "no trade"
   },
   "trades": [
@@ -58,49 +62,61 @@ const DATA = {
   "market": {
     "mood": "RISK-OFF",
     "notes": [
-      "Reported Binance hack",
-      "BTC under $77K",
-      "SOL down about 2% over 24h"
+      "SOL about $95, down about 1.7% over 24h",
+      "Trending Solana memecoins mostly bot-driven micro trades",
+      "Loosened filters active, scam checks unchanged"
     ]
   },
   "vetRejected": [
     {
-      "token": "GLITCH",
-      "reason": "spike, more sells than buys"
+      "token": "HYPERCHAN",
+      "reason": "bot-like micro trades, down 34% in 6h, paid boosts"
+    },
+    {
+      "token": "three",
+      "reason": "tiny bot buys, flat price, 124 insider wallets flagged"
     },
     {
       "token": "JOB",
-      "reason": "flat, buys and sells even"
+      "reason": "slightly more sells than buys"
     },
     {
-      "token": "HYPERCHAN",
-      "reason": "falling, liquidity too low"
+      "token": "GLITCH",
+      "reason": "more sells than buys"
     },
     {
       "token": "GATO",
-      "reason": "more sells than buys"
+      "reason": "more sells than buys, down 5.5% in 1h"
+    },
+    {
+      "token": "DESSA",
+      "reason": "more sells than buys, flat"
     }
   ],
   "bestCandidate": {
     "token": "JOB",
-    "status": "waiting for buyers"
+    "status": "waiting for buyers to outnumber sellers"
   },
   "thresholds": [
     [
       "min_age_minutes",
-      "60"
+      "30"
     ],
     [
       "min_liquidity_usd",
-      "100000"
+      "75000"
     ],
     [
       "min_volume_24h",
-      "250000"
+      "120000"
     ],
     [
       "min_trades_1h",
-      "150"
+      "60"
+    ],
+    [
+      "min_market_cap",
+      "500000"
     ],
     [
       "max_top_holder",
@@ -124,7 +140,7 @@ const DATA = {
     ],
     [
       "momentum",
-      "buys > sells"
+      "buys >= sells"
     ]
   ]
 };
